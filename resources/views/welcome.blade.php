@@ -81,12 +81,6 @@
 
 
               </a>
-              <a id="SectionFMr4" data-clientid="SectionFMr4" href="{{ route('register') }}" data-displayname="Button with icon"
-                class="react-grid-item false"
-                style="display: flex; width: fit-content; height: fit-content; margin: 0px; min-height: 20px; min-width: 20px; position: relative; ">
-
-                Sign Up
-              </a>
               <style id="style-section-DivgEvF-DivDvSc">
                 [data-clientId="DivDvSc"] {
                   flex-direction: row;

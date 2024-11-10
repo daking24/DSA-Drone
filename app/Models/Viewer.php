@@ -17,6 +17,7 @@ class Viewer extends Model
         'service_no',
         'rank',
         'post',
+        'phone_no',
     ];
 
     public function user()

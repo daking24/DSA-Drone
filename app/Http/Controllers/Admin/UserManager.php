@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class UserManager extends Controller
 {
@@ -45,6 +46,7 @@ class UserManager extends Controller
             'service_no' => 'nullable|string|max:20',
             'rank' => 'nullable|string|max:20',
             'post' => 'nullable|string|max:50',
+            'phone_no' => 'nullable|string|max:20',
         ]);
     }
 
@@ -57,6 +59,8 @@ class UserManager extends Controller
     // Private method to create a user entry
     private function createUserEntry(array $data, string $password)
     {
+        // For testing purposes, using a simple password
+        $password = 'password123';
         return User::create([
             'name' => $data['first_name'] . ' ' . $data['last_name'],
             'email' => $data['email'],
@@ -75,7 +79,99 @@ class UserManager extends Controller
             'service_no' => $data['service_no'],
             'rank' => $data['rank'],
             'post' => $data['post'],
+            'phone_no' => $data['phone_no'],
         ]);
     }
 
+    public function editUser(User $user)
+    {
+        $viewer = $user->viewer;
+        return view('admin.pages.user_modal.edit', compact('user', 'viewer'));
+    }
+
+    public function updateUser(Request $request, User $user)
+    {
+        $data = $this->validateUserData($request);
+
+        $user->update([
+            'name' => $data['first_name'] . ' ' . $data['last_name'],
+            'email' => $data['email'],
+        ]);
+
+        $user->viewer->update([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'gender' => $data['gender'],
+            'service_no' => $data['service_no'],
+            'rank' => $data['rank'],
+            'post' => $data['post'],
+            'phone_no' => $data['phone_no'],
+        ]);
+
+        return redirect()->route('admin.users')->with('success', 'User updated successfully');
+    }
+
+    public function deleteUser(User $user)
+    {
+        return view('admin.pages.user_modal.delete', compact('user'));
+    }
+
+    public function destroyUser(User $user)
+    {
+        $user->viewer()->delete();
+        $user->delete();
+        return redirect()->route('admin.users')->with('success', 'User deleted successfully');
+    }
+
+    public function index() {
+        $user = Auth::user();
+        $users = User::with('viewer')->get();
+        return view('admin.pages.users', compact('users', 'user'));
+    }
+
+    public function edit(User $user)
+    {
+        $viewer = $user->viewer;
+        return view('admin.pages.user_modal.edit', compact('user', 'viewer'));
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'first_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'gender' => 'nullable|string|in:male,female,other',
+            'service_no' => 'nullable|string|max:255',
+            'rank' => 'nullable|string|max:255',
+            'post' => 'nullable|string|max:255',
+            'phone_no' => 'nullable|string|max:255',
+        ]);
+
+        $user->update([
+            'name' => $data['first_name'] . ' ' . $data['last_name'],
+            'email' => $data['email'],
+        ]);
+
+        $user->viewer->update([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'gender' => $data['gender'],
+            'service_no' => $data['service_no'],
+            'rank' => $data['rank'],
+            'post' => $data['post'],
+            'phone_no' => $data['phone_no'],
+        ]);
+
+        return redirect()->route('admin.users')->with('success', 'User updated successfully');
+
+    }
+
+    public function destroy(User $user)
+    {
+        $user->viewer()->delete();
+        $user->delete();
+
+        return redirect()->route('admin.users')->with('success', 'User deleted successfully');
+    }
 }

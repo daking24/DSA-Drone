@@ -17,78 +17,51 @@ class AuthManager extends Controller
         return view('welcome');
     }
 
-    public function login()
+    public function showLoginForm()
     {
         return view('auth.login');
     }
 
-    // Handle the login request
-    public function loginLogic(Request $request)
+    // Handle login request
+    public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+        // Validate the form input
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:6',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-
-            // Retrieve the authenticated user's data
-            $user = Auth::user()->id;
-            $userData = User::find('$user');
-
-            // Redirect to dashboard with user data passed to the view
-            return redirect()->intended('dashboard')->with('user', $userData);
+        // Attempt to log the user in
+        if (Auth::attempt($request->only('email', 'password'))) {
+            // If successful, redirect based on role
+            return $this->redirectUser();
         }
 
+        // If failed, redirect back with an error
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ]);
     }
 
-
-    // Show the registration form
-    public function showRegisterForm()
-    {
-        return view('auth.register');  // Assuming you have a 'register.blade.php' view
-    }
-
-    // Handle the registration request
-    public function register(Request $request)
-    {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        Auth::login($user);
-
-        return redirect()->route('dashboard');  // Redirect to dashboard after registration
-    }
-
-    // Handle the logout request
+    // Log the user out
     public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->intended();
+        return redirect('/');
     }
 
-    public function dashboard()
+    // Redirect user based on their role
+    protected function redirectUser()
     {
-        // Retrieve the authenticated user's data
         $user = Auth::user();
 
-        // Pass the user data to the view
-        return view('dashboard', ['user' => $user]);
+        if ($user->roles->contains('name', 'admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+        // dd("Normal User");
+        return redirect()->route('user.dashboard');
     }
 }

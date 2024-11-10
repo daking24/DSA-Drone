@@ -67,4 +67,14 @@ class User extends Authenticatable
         $role = Role::where('name', $role)->firstOrFail();
         return $this->roles()->detach($role->id);
     }
+
+    /**
+     * Get the viewer that owns the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function viewer()
+    {
+        return $this->hasOne(Viewer::class); // Or appropriate relationship
+    }
 }

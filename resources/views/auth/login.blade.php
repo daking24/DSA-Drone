@@ -25,7 +25,7 @@
         @enderror
       <button type="submit"> Sign in </button>
 
-        <span> Don't have an account?<a href="{{ route('view.register') }}"> Register </a> | <a href="{{ route('home') }}">Home</a></span>
+        <span> Don't have an account? Contact the Administrators | <a href="{{ route('home') }}">Home</a></span>
 
     </form>
   </div>
